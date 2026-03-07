@@ -363,19 +363,6 @@ export const Terminal = ({ paneId, tabId, workspaceId }: TerminalProps) => {
 		xterm.options.theme = terminalTheme;
 	}, [terminalTheme]);
 
-	useEffect(() => {
-		if (!isFocused || document.hidden || !document.hasFocus()) return;
-
-		const rafId = requestAnimationFrame(() => {
-			if (!isFocusedRef.current || document.hidden || !document.hasFocus()) {
-				return;
-			}
-			xtermRef.current?.focus();
-		});
-
-		return () => cancelAnimationFrame(rafId);
-	}, [isFocused, isFocusedRef]);
-
 	const { data: fontSettings } = electronTrpc.settings.getFontSettings.useQuery(
 		undefined,
 		{
@@ -420,17 +407,11 @@ export const Terminal = ({ paneId, tabId, workspaceId }: TerminalProps) => {
 		}
 	};
 
-	const handleMouseDownCapture = (event: React.MouseEvent) => {
-		if (event.button !== 0) return;
-		xtermRef.current?.focus();
-	};
-
 	return (
 		<div
 			role="application"
 			className="relative h-full w-full overflow-hidden"
 			style={{ backgroundColor: terminalBg }}
-			onMouseDownCapture={handleMouseDownCapture}
 			onDragOver={handleDragOver}
 			onDrop={handleDrop}
 		>
