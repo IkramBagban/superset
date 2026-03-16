@@ -60,6 +60,13 @@ export function BehaviorSettings({ visibleItems }: BehaviorSettingsProps) {
 		SETTING_ITEM_ID.BEHAVIOR_OPEN_LINKS_IN_APP,
 		visibleItems,
 	);
+	const showOptionAsMetaKey = isItemVisible(
+		SETTING_ITEM_ID.BEHAVIOR_OPTION_AS_META_KEY,
+		visibleItems,
+	);
+	const isMac =
+		typeof navigator !== "undefined" &&
+		navigator.platform.toLowerCase().includes("mac");
 
 	const utils = electronTrpc.useUtils();
 
@@ -266,6 +273,28 @@ export function BehaviorSettings({ visibleItems }: BehaviorSettingsProps) {
 			},
 		},
 	);
+	const { data: optionAsMetaKey, isLoading: isOptionAsMetaKeyLoading } =
+		electronTrpc.settings.getOptionAsMetaKey.useQuery();
+	const setOptionAsMetaKey =
+		electronTrpc.settings.setOptionAsMetaKey.useMutation({
+			onMutate: async ({ enabled }) => {
+				await utils.settings.getOptionAsMetaKey.cancel();
+				const previous = utils.settings.getOptionAsMetaKey.getData();
+				utils.settings.getOptionAsMetaKey.setData(undefined, enabled);
+				return { previous };
+			},
+			onError: (_err, _vars, context) => {
+				if (context?.previous !== undefined) {
+					utils.settings.getOptionAsMetaKey.setData(
+						undefined,
+						context.previous,
+					);
+				}
+			},
+			onSettled: () => {
+				utils.settings.getOptionAsMetaKey.invalidate();
+			},
+		});
 
 	const previewPrefix =
 		resolveBranchPrefix({
@@ -432,34 +461,63 @@ export function BehaviorSettings({ visibleItems }: BehaviorSettingsProps) {
 					</div>
 				)}
 
-				{showOpenLinksInApp && (
-					<div className="flex items-center justify-between">
-						<div className="space-y-0.5">
-							<Label
-								htmlFor="open-links-in-app"
-								className="text-sm font-medium"
-							>
-								Open links in app browser
-							</Label>
-							<p className="text-xs text-muted-foreground">
-								Open links from chat and terminal in the built-in browser
-								instead of your default browser
-							</p>
+					{showOpenLinksInApp && (
+						<div className="flex items-center justify-between">
+							<div className="space-y-0.5">
+								<Label
+									htmlFor="open-links-in-app"
+									className="text-sm font-medium"
+								>
+									Open links in app browser
+								</Label>
+								<p className="text-xs text-muted-foreground">
+									Open links from chat and terminal in the built-in browser
+									instead of your default browser
+								</p>
+							</div>
+							<Switch
+								id="open-links-in-app"
+								checked={openLinksInApp ?? false}
+								onCheckedChange={(enabled) =>
+									setOpenLinksInApp.mutate({ enabled })
+								}
+								disabled={isOpenLinksInAppLoading || setOpenLinksInApp.isPending}
+							/>
 						</div>
-						<Switch
-							id="open-links-in-app"
-							checked={openLinksInApp ?? false}
-							onCheckedChange={(enabled) =>
-								setOpenLinksInApp.mutate({ enabled })
-							}
-							disabled={isOpenLinksInAppLoading || setOpenLinksInApp.isPending}
-						/>
-					</div>
-				)}
+					)}
 
-				{showWorktreeLocation && (
-					<div className="space-y-0.5">
-						<Label className="text-sm font-medium">Worktree location</Label>
+					{showOptionAsMetaKey && (
+						<div className="flex items-center justify-between">
+							<div className="space-y-0.5">
+								<Label
+									htmlFor="option-as-meta-key"
+									className="text-sm font-medium"
+								>
+									Use Option as Meta key
+								</Label>
+								<p className="text-xs text-muted-foreground">
+									On macOS, send Escape + letter for Option + letter in terminal
+									instead of inserting special characters
+								</p>
+							</div>
+							<Switch
+								id="option-as-meta-key"
+								checked={optionAsMetaKey ?? false}
+								onCheckedChange={(enabled) =>
+									setOptionAsMetaKey.mutate({ enabled })
+								}
+								disabled={
+									!isMac ||
+									isOptionAsMetaKeyLoading ||
+									setOptionAsMetaKey.isPending
+								}
+							/>
+						</div>
+					)}
+
+					{showWorktreeLocation && (
+						<div className="space-y-0.5">
+							<Label className="text-sm font-medium">Worktree location</Label>
 						<p className="text-xs text-muted-foreground">
 							Base directory for new worktrees
 						</p>

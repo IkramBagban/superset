@@ -30,6 +30,7 @@ export const SETTING_ITEM_ID = {
 	BEHAVIOR_RESOURCE_MONITOR: "behavior-resource-monitor",
 	BEHAVIOR_WORKTREE_LOCATION: "behavior-worktree-location",
 	BEHAVIOR_OPEN_LINKS_IN_APP: "behavior-open-links-in-app",
+	BEHAVIOR_OPTION_AS_META_KEY: "behavior-option-as-meta-key",
 
 	TERMINAL_PRESETS: "terminal-presets",
 	TERMINAL_QUICK_ADD: "terminal-quick-add",
@@ -479,6 +480,26 @@ export const SETTINGS_ITEMS: SettingsItem[] = [
 			"chat",
 			"terminal",
 			"url",
+		],
+	},
+	{
+		id: SETTING_ITEM_ID.BEHAVIOR_OPTION_AS_META_KEY,
+		section: "behavior",
+		title: "Use Option as Meta key",
+		description:
+			"On macOS, send Escape + letter for Option + letter in terminal",
+		keywords: [
+			"option",
+			"option meta",
+			"alt",
+			"meta",
+			"escape",
+			"terminal",
+			"macos",
+			"shortcut",
+			"bindings",
+			"claude code",
+			"special characters",
 		],
 	},
 	{
